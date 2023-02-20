@@ -1,3 +1,6 @@
+import std/httpclient
+import std/json
+
 import gintro/[gtk4, glib, gobject, gio]
 
 const menuData = """
@@ -24,11 +27,17 @@ proc activate(app: gtk4.Application) =
     builder = newBuilderFromString(menuData)
     menuModel : gio.MenuModel = builder.getMenuModel("menuModel")
     menu = newPopoverMenu(menuModel)
-    actionGroup: gio.SimpleActionGroup = newSimpleActionGroup()
+    actionGroup : gio.SimpleActionGroup = newSimpleActionGroup()
     notebook = newNoteBook()
     label = newLabel("Server")
     sw = newScrolledWindow()
     view = newTextView()
+
+    client = newHttpClient()
+
+  let resp = client.getContent("https://nrw.social/api/v1/timelines/public?limit=3")
+  let node = parseJson(resp)#u)
+  view.getBuffer.setText(cstring($node), -1)
 
   var action = newSimpleAction("quit")
   discard action.connect("activate", cbQuit, app)
